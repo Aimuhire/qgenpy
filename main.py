@@ -29,7 +29,7 @@ insertQuoteSqlFormula="INSERT INTO quotes (quote,author,category,tags,imgFileNam
 extractorRegEx = "^([\w\W]+)\;([\w\W]+)\;([\w\W]+)$"
 QuotesGenerator = QuoteGen(os.path.join("assets", "Quotes.csv"), extractorRegEx)
 
-quoteList = QuotesGenerator.getQuoteList(maxQuotes=1000,random=True)
+quoteList = QuotesGenerator.getQuoteList(maxQuotes=100,random=True)
 MAX_QUOTES_COUNT = len(quoteList)
 progressCount=0
 for quoteDict in quoteList: 

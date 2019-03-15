@@ -66,8 +66,7 @@ class QuoteGen:
 
             
             T = TagGen(quote.lower())
-            # TAGS = T.getTags()
-            TAGS=[category]
+            TAGS = T.getTags()
             quoteDict = {}
             print(len(quote))
             if len(quote)>500:
