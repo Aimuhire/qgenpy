@@ -31,11 +31,10 @@ class TagGen(object):
 
         sortedWords=sorted(scoreDict.items(),key=self.sortKey,reverse=True)
         tags=[]
-        tagCount=3 #we want max 3 tags 
-        print(sortedWords)
-        # I have no idea why variable j is not visible inside the if statement
-        for j in range(0,len(sortedWords)): 
-            k=j #quick fix
+        tagCount=3 #we want max 3 tags  
+        # I have no idea why variable j is not visible inside the if statement 
+        for k in range(0,len(sortedWords)): 
+            # k=j #quick fix
             if not tagCount: 
                 break 
                 #tag length must be both greater than 3 chars and tag score greater than 100 (to avoid tags that are weak: i.e: #the #a #and )
