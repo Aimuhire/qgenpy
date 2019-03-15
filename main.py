@@ -18,7 +18,7 @@ except Exception as e:
 myCursor = myDB.cursor() 
 
 myCursor.execute(
-    "CREATE TABLE IF NOT EXISTS quotes (id INT AUTO_INCREMENT PRIMARY KEY,quote VARCHAR(500) NOT NULL UNIQUE KEY,author VARCHAR(255),category VARCHAR(255),tags VARCHAR(255),imgFileName VARCHAR(255) NOT NULL)"
+    "CREATE TABLE IF NOT EXISTS quotes (id INT AUTO_INCREMENT PRIMARY KEY,quote VARCHAR(500) NOT NULL,author VARCHAR(255),category VARCHAR(255),tags VARCHAR(255),imgFileName VARCHAR(255) NOT NULL)"
 )
 
 insertQuoteSqlFormula="INSERT INTO quotes (quote,author,category,tags,imgFileName) values(%s,%s,%s,%s,%s)"
