@@ -12,7 +12,7 @@ class TagGen(object):
 
     def getTags(self):
         
-        
+        """Generate the three tags used by the image api"""
         rank=1
         tenkDict={}
         for w in tenkWords:

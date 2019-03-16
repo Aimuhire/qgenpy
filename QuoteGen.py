@@ -2,17 +2,15 @@
 import sys, textwrap, re, os
 from random import randint
 from urllib import request
+import unicodedata
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
-from TagGen import TagGen
 
 # fonts
 # quote: 56pt Calibri regular center
 # author: 56pt adobe devanagari center grey italic
-# water mark: 30pt  adobe devanagari left
-
-tg = open("assets/tags.txt", "a", encoding="utf-8")
+# water mark: 30pt  adobe devanagari left 
 
 
 class QuoteGen:
@@ -21,20 +19,24 @@ class QuoteGen:
         self.credit = "aimateur quotes"
         self.extractorRegEx = extractorRegEx
         try:
-            qf = open(quoteFile, encoding="utf8")
-
+            qf = open(quoteFile, encoding="utf8") 
             self.quotes = qf.readlines()
         except FileNotFoundError as e:
             raise
 
     def getQuoteList(self, maxQuotes=0, random=False):
-        quoteList=[]
+        """Returns list of quotes as dict items
+        if maxQuotes is not set or equals zero, returns all quotes in the quote file that satisfy length conditions.
+        """
+        print("## getting quote list and tag generation ###")
+        quoteList = []
         rawList = []
         allQuotesCount = len(self.quotes)
-        if maxQuotes == 0:
-            maxQuotes = allQuotesCount - 1
+
+        if maxQuotes == 0 or "maxQuotes" not in vars():
+            maxQuotes = allQuotesCount
         if random == True:
-            randomP=[]
+            randomP = []
             # get random quotes
             # could shuffle? all do directly with self.quotes.
             # Thought this was faster on bigger lists
@@ -43,13 +45,14 @@ class QuoteGen:
                 n = int(randint(0, (allQuotesCount - 1)))
                 if n not in randomP:
                     randomP.append(n)
-            print(randomP)
             for n in randomP:
                 rawList.append(self.quotes[n])
         else:
             rawList = self.quotes[0:maxQuotes]
-
+        c=0
         for quote in rawList:
+            c+=1
+            print(c,len(rawList))
             quote = quote.strip()
             try:
                 quote, author, category = re.search(self.extractorRegEx, quote).groups()
@@ -64,42 +67,35 @@ class QuoteGen:
             except AttributeError as e:
                 continue
 
-            
-            T = TagGen(quote.lower())
-            TAGS = T.getTags()
-            quoteDict = {}
-            print(len(quote))
-            if len(quote)>500:
-              continue
+            quoteDict = {} 
+            if len(quote) > 500:
+                continue
             quoteDict["quote"] = quote.strip()
             quoteDict["author"] = author.strip()
             quoteDict["category"] = category.strip()
-            quoteDict["tags"] = TAGS
-            quoteList.append(quoteDict)
-            print(TAGS)
-            txt = " |  ".join(TAGS)
-            tg.write(txt + "\n")
+            quoteList.append(quoteDict) 
         print("--total--", len(quoteList))
 
         return quoteList
 
     def getImgs(self, quoteD):
         """quoteD is a dictionary with quote,author,category and tags
-        tags is a list
-        returns img and logoimg kinda pillow objects"""
+        tags key has a list value
+        returns img and logoimg kinda Pillow objects"""
 
         imgId = ""
         tags = "?" + (",".join(quoteD["tags"]))
 
         # has to be a loop cz, "?water,abstract" often returns abstract images. So, try option water, if it fails fall back to abstract images, if all fails fallback to full random
 
-        while imgId == "" or imgId == "source-404.jpeg":
-            print("imgid ", imgId)
+        while imgId == "" or imgId == "source-404.jpeg": 
             if imgId == "source-404.jpeg":
+                print("## 404 image ##")
                 tags = "?" + quoteD["category"]  # will add category over here
             print("Requesting image url...")
+            tags= unicodedata.normalize("NFD", tags).encode("ascii", "ignore").decode("utf-8")
             res = request.urlopen(
-                "https://source.unsplash.com/random/1080x1080/" + tags
+                "https://source.unsplash.com/random/1080x1080/"+tags
             )
             imgUrl = res.geturl()
             print("...url received...")
@@ -118,11 +114,9 @@ class QuoteGen:
                         print("...exception url pattern mismatch")
 
         print("Downloading image...")
-        print("Image downloaded with fileName ", imgId)
         imgName = os.path.join("imgs", imgId)
         (imfile, y) = request.urlretrieve(imgUrl, filename=imgName)
-        imgName = os.path.join("imgs", imgId)
-        (imfile, y) = request.urlretrieve(imgUrl, filename=imgName)
+        imgName = os.path.join("imgs", imgId) 
 
         # width: number of max chars per line. depends on quote length, quote size and quote box
         # img = Image.open(imfile)
@@ -132,7 +126,20 @@ class QuoteGen:
 
         return (img, logoimg, imgId)
 
-    def designQuote(self, quoteD, imgId, img, logoimg):
+    def designQuote(self, quoteD, outputName, img, logoimg):
+        """Does the actual quote image design.
+        receives:
+        quoteD dictionary with quote and author
+        outputName a filename string
+        img and logoimg are Pillow objects
+        """
+        ############################################################################
+        # >> not implemented: support multiple mode kinda Gray scale / color output
+        # >>not implemented diffelent designs
+        #     1. lower half b/w quotebox : implemented
+        #     2. center quotebox: not implemented
+        #############################################################################
+
         print("Creating quote image...")
         quote = quoteD["quote"]
         author = quoteD["author"]
@@ -144,18 +151,16 @@ class QuoteGen:
         if len(quote) < 100:
             width = 35
             qfsize = 56
-            authorPad = space
-            print("less 100", len(quote))
+            authorPad = space 
         elif len(quote) < 300:
             width = 45
             qfsize = 46
-            authorPad = 0
-            print("less 300", len(quote))
-        elif len(quote) <= 500:
+            authorPad = 0 
+        else:
             width = 70
             qfsize = 30
-            authorPad = 0 
-            print("too long", len(quote)) 
+            authorPad = 0
+            print("long quote", len(quote)) 
 
         quote = textwrap.wrap(quote, width=width)
         quoteLines = len(quote)
@@ -207,8 +212,8 @@ class QuoteGen:
         img.paste(logoimg, (space, int((H - hl) / 2)), mask=logoimg)
         # draw.rectangle((space,int((H-hl)/2),space+wl,hl+int((H-hl)/2)),fill=(0,230,255,100),outline=None)
         img = img.convert("RGB")
-        img.save(os.path.join("output",imgId))
-        img.resize((540,540)).show()
-        print("success! imaged saved at :output\\" + imgId) 
-        os.unlink(os.path.join("imgs", imgId))
-        return os.path.join("output", imgId)
+        img.save(os.path.join("output", outputName))
+        # img.resize((540, 540)).show()
+        print("success! imaged saved as " + outputName)
+        os.unlink(os.path.join("imgs", re.search("(\-.*)",outputName).group(0)[1:]))
+        return os.path.join("output", outputName)
