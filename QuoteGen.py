@@ -48,11 +48,8 @@ class QuoteGen:
             for n in randomP:
                 rawList.append(self.quotes[n])
         else:
-            rawList = self.quotes[0:maxQuotes]
-        c=0
-        for quote in rawList:
-            c+=1
-            print(c,len(rawList))
+            rawList = self.quotes[0:maxQuotes] 
+        for quote in rawList: 
             quote = quote.strip()
             try:
                 quote, author, category = re.search(self.extractorRegEx, quote).groups()

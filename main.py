@@ -55,8 +55,7 @@ for quoteDict in quoteList:
         MAX_QUOTES_COUNT-=1
         print("--new total-- "+str(MAX_QUOTES_COUNT))
         continue
-
-    print(quoteDict["quote"])
+ 
     outputName = str(int(time.time())) + "-" + imgId
 
     outputImagePath = QuotesGenerator.designQuote(quoteDict, outputName, img, logoimg)
